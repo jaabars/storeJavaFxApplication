@@ -2,10 +2,12 @@ package sample.db.impl;
 
 import sample.db.DbHelper;
 import sample.models.Account;
+import sample.models.Category;
 import sample.models.User;
-import sun.java2d.opengl.OGLRenderQueue;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DbHelperImpl implements DbHelper {
 
@@ -117,6 +119,106 @@ public class DbHelperImpl implements DbHelper {
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }finally {
+            if (connection!=null){
+                try {
+                    connection.close();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public List<Category> getAllCategories() {
+        Connection connection=null;
+        try {
+            connection = getConnection();
+            String selectQuery = "SELECT id,name,active FROM categories";
+            PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            List<Category> categoryList = new ArrayList<>();
+            while (resultSet.next()){
+                Category category = new Category();
+                category.setId(resultSet.getLong("id"));
+                category.setName(resultSet.getString("name"));
+                category.setActive(resultSet.getInt("active")==1?true:false);
+                categoryList.add(category);
+            }
+            return categoryList;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public boolean saveCategory(Category category) {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            String insertQuery = "INSERT INTO categories (name,active) VALUES(?,?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(insertQuery);
+            preparedStatement.setString(1,category.getName());
+            preparedStatement.setInt(2,category.isActive()?1:0);
+            int result = preparedStatement.executeUpdate();
+            return result==1?true:false;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }finally {
+            if (connection!=null){
+                try {
+                    connection.close();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean updateCategory(Category category) {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            String updateQuery = "UPDATE categories SET name=?, active=? WHERE id=?";
+            PreparedStatement preparedStatement = connection.prepareStatement(updateQuery);
+            preparedStatement.setString(1,category.getName());
+            preparedStatement.setInt(2,category.isActive()?1:0);
+            preparedStatement.setLong(3,category.getId());
+            int result = preparedStatement.executeUpdate();
+            return result==1?true:false;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }finally {
+            if (connection!=null){
+                try {
+                    connection.close();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean deactivateCategory(Category category) {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            String deactivateQuery = "UPDATE categories SET active=? WHERE id=?";
+            PreparedStatement preparedStatement = connection.prepareStatement(deactivateQuery);
+            preparedStatement.setInt(1,0);
+            preparedStatement.setLong(2,category.getId());
+            int result = preparedStatement.executeUpdate();
+            return result==1?true:false;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        finally {
             if (connection!=null){
                 try {
                     connection.close();

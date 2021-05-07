@@ -51,7 +51,7 @@ public class LoginController {
         }
     }
 
-    private void login() {
+    private void login() throws IOException {
         if (txtLogin.getText().isEmpty()){
             Alert alert = new Alert(Alert.AlertType.WARNING,"Поле логин не может быть пустым!");
             alert.show();
@@ -72,12 +72,20 @@ public class LoginController {
             alert.show();
             return;
         }
-        if(!account.getPassword().equals(txtPassword)){
+        if(!account.getPassword().equals(txtPassword.getText())){
             Alert alert = new Alert(Alert.AlertType.WARNING,"Неверный пароль");
             alert.show();
             return;
         }
-        System.out.println("Успешно");
-
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("../views/menuForm.fxml"));
+        loader.load();
+        MenuFormController menuFormController = loader.getController();
+        Stage stage = new Stage();
+        stage.setResizable(false);
+        stage.setScene(new Scene(loader.getRoot()));
+        menuFormController.initData(stage,account);
+        stage.show();
+        Stage loginStage = (Stage) btnCancel.getScene().getWindow();
+        loginStage.close();
     }
 }

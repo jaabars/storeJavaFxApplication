@@ -2,7 +2,10 @@ package sample.db;
 
 import sample.db.impl.DbHelperImpl;
 import sample.models.Account;
+import sample.models.Category;
 import sample.models.User;
+
+import java.util.List;
 
 public interface DbHelper {
 
@@ -15,4 +18,12 @@ public interface DbHelper {
     User saveUser(User user);
 
     boolean saveAccount(Account account);
+
+    List<Category> getAllCategories();
+
+    boolean saveCategory(Category category);
+
+    boolean updateCategory(Category category);
+
+    boolean deactivateCategory(Category category);
 }
