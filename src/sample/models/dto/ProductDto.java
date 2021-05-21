@@ -1,21 +1,15 @@
-package sample.models;
+package sample.models.dto;
 
-public class Product {
+import sample.models.Category;
+import sample.models.Price;
+
+public class ProductDto {
     private Long id;
     private String name;
     private String barcode;
-    private Category category;
     private boolean active;
-
-    public Product(String name, String barcode, Category category, boolean active) {
-        this.name = name;
-        this.barcode = barcode;
-        this.category = category;
-        this.active = active;
-    }
-
-    public Product() {
-    }
+    private Category category;
+    private Price price;
 
     public boolean isActive() {
         return active;
@@ -55,5 +49,13 @@ public class Product {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public Price getPrice() {
+        return price;
+    }
+
+    public void setPrice(Price price) {
+        this.price = price;
     }
 }

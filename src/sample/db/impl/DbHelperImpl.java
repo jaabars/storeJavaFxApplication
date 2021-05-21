@@ -1,11 +1,12 @@
 package sample.db.impl;
 
 import sample.db.DbHelper;
-import sample.models.Account;
-import sample.models.Category;
-import sample.models.User;
+import sample.models.*;
+import sample.models.dto.ProductDto;
+import sun.applet.AppletResourceLoader;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -229,6 +230,257 @@ public class DbHelperImpl implements DbHelper {
         }
         return false;
     }
+
+    @Override
+    public Long saveProduct(Product product) {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            String insertProduct = "INSERT INTO products (name,barcode,category_id,active) VALUES (?,?,?,?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(insertProduct);
+            preparedStatement.setString(1,product.getName());
+            preparedStatement.setString(2,product.getBarcode());
+            preparedStatement.setLong(3,product.getCategory().getId());
+            preparedStatement.setInt(4,product.isActive()?1:0);
+            preparedStatement.executeUpdate();
+            ResultSet resultSet = preparedStatement.getGeneratedKeys();
+            return resultSet.getLong(1);
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }finally {
+            if (connection!=null){
+                try {
+                    connection.close();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+            }
+        }
+        return 0l;
+    }
+
+    @Override
+    public List<Category> getAllActiveCategories() {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            String selectQuery = "SELECT id,name FROM categories where active=1";
+            PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            List<Category> categoryList = new ArrayList<>();
+            while (resultSet.next()){
+                Category category = new Category(resultSet.getLong(1),resultSet.getString(2));
+                categoryList.add(category);
+            }
+            return categoryList;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }finally {
+            if (connection!=null){
+                try {
+                    connection.close();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public int savePrice(Price price) {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            String priceSaveQuery = "INSERT INTO prices (price,start_date,end_date,product_id) VALUES (?,?,?,?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(priceSaveQuery);
+            preparedStatement.setDouble(1,price.getPrice());
+            preparedStatement.setString(2,price.getStartDate().toString());
+            preparedStatement.setString(3,price.getEndDate().toString());
+            preparedStatement.setLong(4,price.getProduct().getId());
+            return preparedStatement.executeUpdate();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }finally {
+            if (connection!=null){
+                try {
+                    connection.close();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public List<ProductDto> getAllProducts() {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            String selectQuery = "SELECT p.id,p.name,p.barcode,p.active,c.id,c.name,pr.id,pr.price,pr.start_date,pr.end_date FROM products as p join categories as c on p.category_id=c.id join prices as pr on pr.product_id=p.id where pr.end_date>=?";
+            PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
+            preparedStatement.setString(1,LocalDate.now().toString());
+            ResultSet resultSet = preparedStatement.executeQuery();
+            List<ProductDto> productDtoList = new ArrayList<>();
+            while (resultSet.next()){
+                ProductDto productDto = new ProductDto();
+                productDto.setId(resultSet.getLong(1));
+                productDto.setName(resultSet.getString(2));
+                productDto.setBarcode(resultSet.getString(3));
+                productDto.setActive(resultSet.getInt(4)==1?true:false);
+                Category category = new Category();
+                category.setId(resultSet.getLong(5));
+                category.setName(resultSet.getString(6));
+                productDto.setCategory(category);
+                Price price = new Price();
+                price.setId(resultSet.getLong(7));
+                price.setPrice(resultSet.getDouble(8));
+                price.setStartDate(LocalDate.parse(resultSet.getString(9)));
+                price.setEndDate(LocalDate.parse(resultSet.getString(10)));
+                productDto.setPrice(price);
+                productDtoList.add(productDto);
+            }
+            return productDtoList;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+            return new ArrayList<>();
+    }
+
+
+    @Override
+    public int saveProductDtoTransactionMethod(ProductDto productDto) {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            connection.setAutoCommit(false);
+            String insertProductQuery = "INSERT INTO products (name,barcode,category_id,active) VALUES (?,?,?,?)";
+            PreparedStatement preparedStatementProduct = connection.prepareStatement(insertProductQuery);
+            preparedStatementProduct.setString(1,productDto.getName());
+            preparedStatementProduct.setString(2,productDto.getBarcode());
+            preparedStatementProduct.setLong(3,productDto.getCategory().getId());
+            preparedStatementProduct.setInt(4,productDto.isActive()?1:0);
+            preparedStatementProduct.executeUpdate();
+            ResultSet resultSet = preparedStatementProduct.getGeneratedKeys();
+            Long productId = resultSet.getLong(1);
+
+            String insertProductRestQuery = "INSERT INTO rests(product_id,amount,max_amount,min_amount) values(?,?,?,?)";
+            PreparedStatement preparedStatementRest = connection.prepareStatement(insertProductRestQuery);
+            preparedStatementRest.setLong(1,productId);
+            preparedStatementRest.setInt(2,0);
+            preparedStatementRest.setInt(3,0);
+            preparedStatementRest.setInt(4,0);
+            preparedStatementRest.executeUpdate();
+
+            String insertPriceQuery = "INSERT INTO prices (price,start_date,end_date,product_id) VALUES (?,?,?,?)";
+            PreparedStatement preparedStatementPrice = connection.prepareStatement(insertPriceQuery);
+            preparedStatementPrice.setDouble(1,productDto.getPrice().getPrice());
+            preparedStatementPrice.setString(2,productDto.getPrice().getStartDate().toString());
+            preparedStatementPrice.setString(3,productDto.getPrice().getEndDate().toString());
+            preparedStatementPrice.setLong(4,productId);
+            int result = preparedStatementPrice.executeUpdate();
+            connection.commit();
+            return result;
+        } catch (SQLException throwables) {
+            try {
+                System.out.println("rollBack");
+                connection.rollback();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            throwables.printStackTrace();
+        }finally {
+            if (connection!=null){
+                try {
+                    connection.close();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int updateProductAndPrice(ProductDto productDto) {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            connection.setAutoCommit(false);
+            String updateProductQuery = "UPDATE products SET name=?,category_id=?,active=? where id=?";
+            PreparedStatement updateProductpreparedStatement = connection.prepareStatement(updateProductQuery);
+            updateProductpreparedStatement.setString(1,productDto.getName());
+            updateProductpreparedStatement.setLong(2,productDto.getCategory().getId());
+            updateProductpreparedStatement.setInt(3,productDto.isActive()?1:0);
+            updateProductpreparedStatement.setLong(4,productDto.getId());
+            updateProductpreparedStatement.executeUpdate();
+            String selectPriceQuery = "SELECT id,price,start_date,end_date, product_id from prices where product_id=? and id!=?";
+            PreparedStatement selectAllPricesPreparedStatement = connection.prepareStatement(selectPriceQuery);
+            selectAllPricesPreparedStatement.setLong(1,productDto.getId());
+            selectAllPricesPreparedStatement.setLong(2,productDto.getPrice().getId());
+            ResultSet resultSet = selectAllPricesPreparedStatement.executeQuery();
+            List<Price> priceList = new ArrayList<>();
+            while (resultSet.next()){
+                Price price = new Price();
+                price.setId(resultSet.getLong(1));
+                price.setPrice(resultSet.getDouble(2));
+                price.setStartDate(LocalDate.parse(resultSet.getString(3)));
+                price.setEndDate(LocalDate.parse(resultSet.getString(4)));
+                Product product = new Product();
+                product.setId(resultSet.getLong(5));
+                price.setProduct(product);
+                priceList.add(price);
+            }
+            if (!priceList.isEmpty()){
+                Connection finalConnection = connection;
+                priceList.stream().filter(price->
+                        (price.getStartDate().isAfter(productDto.getPrice().getStartDate())||price.getStartDate().isBefore(productDto.getPrice().getStartDate()))
+                        &&(price.getEndDate().isAfter(productDto.getPrice().getEndDate())||price.getEndDate().isBefore(productDto.getPrice().getEndDate()))
+
+                        ).forEach(p->{
+                            p.setEndDate(LocalDate.now().minusDays(2));
+                    String updatePrice = "UPDATE prices set end_date=? where id=?";
+                    PreparedStatement preparedStatement = null;
+                    try {
+                        preparedStatement = finalConnection.prepareStatement(updatePrice);
+                        preparedStatement.setString(1,p.getEndDate().toString());
+                        preparedStatement.setLong(2,p.getId());
+                        preparedStatement.executeUpdate();
+                    } catch (SQLException throwables) {
+                        throwables.printStackTrace();
+                    }
+                });
+            }
+            String updatePrice = "UPDATE prices SET price=?,start_date=?,end_date=?,product_id=? where id=?";
+            PreparedStatement preparedStatement = connection.prepareStatement(updatePrice);
+            preparedStatement.setDouble(1,productDto.getPrice().getPrice());
+            preparedStatement.setString(2,productDto.getPrice().getStartDate().toString());
+            preparedStatement.setString(3,productDto.getPrice().getEndDate().toString());
+            preparedStatement.setLong(4,productDto.getId());
+            preparedStatement.setLong(5,productDto.getPrice().getId());
+            int result = preparedStatement.executeUpdate();
+            connection.commit();
+            return result;
+        } catch (SQLException throwables) {
+            try {
+                connection.rollback();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            throwables.printStackTrace();
+        }finally {
+            if (connection!=null){
+                try {
+                    connection.close();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+            }
+        }
+        return 0;
+    }
+
 
     private Connection getConnection() throws SQLException {
 

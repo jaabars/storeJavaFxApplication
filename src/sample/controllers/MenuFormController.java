@@ -39,6 +39,20 @@ public class MenuFormController {
     void onButtonClicked(ActionEvent event) {
         if (event.getSource().equals(btnCategories)){
             openCategoriesMainForm();
+        }else if (event.getSource().equals(btnGoods)){
+            openGoodsMainForm();
+        }
+    }
+
+    private void openGoodsMainForm() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("../views/goodsMainForm.fxml"));
+            loader.load();
+            Stage stage = new Stage();
+            stage.setScene(new Scene(loader.getRoot()));
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

@@ -1,9 +1,8 @@
 package sample.db;
 
 import sample.db.impl.DbHelperImpl;
-import sample.models.Account;
-import sample.models.Category;
-import sample.models.User;
+import sample.models.*;
+import sample.models.dto.ProductDto;
 
 import java.util.List;
 
@@ -26,4 +25,17 @@ public interface DbHelper {
     boolean updateCategory(Category category);
 
     boolean deactivateCategory(Category category);
+
+    Long saveProduct(Product product);
+
+    List<Category> getAllActiveCategories();
+
+    int  savePrice(Price price);
+
+    List<ProductDto> getAllProducts();
+
+
+    int saveProductDtoTransactionMethod(ProductDto productDto);
+
+    int updateProductAndPrice(ProductDto productDto);
 }

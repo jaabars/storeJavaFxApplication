@@ -1,18 +1,25 @@
 package sample.models;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class Price {
     private Long id;
-    private double price;
+    private Double price;
     private Product product;
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
 
-    public Price(Long id, double price, Product product, LocalDateTime startDate, LocalDateTime endDate) {
+    public Price(Long id, Double price, Product product, LocalDate startDate, LocalDate endDate) {
         this.id = id;
         this.price = price;
         this.product = product;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+
+    public Price(Double price, LocalDate startDate, LocalDate endDate) {
+        this.price = price;
         this.startDate = startDate;
         this.endDate = endDate;
     }
@@ -28,11 +35,11 @@ public class Price {
         this.id = id;
     }
 
-    public double getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 
@@ -44,19 +51,19 @@ public class Price {
         this.product = product;
     }
 
-    public LocalDateTime getStartDate() {
+    public LocalDate getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(LocalDateTime startDate) {
+    public void setStartDate(LocalDate startDate) {
         this.startDate = startDate;
     }
 
-    public LocalDateTime getEndDate() {
+    public LocalDate getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(LocalDateTime endDate) {
+    public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
     }
 }

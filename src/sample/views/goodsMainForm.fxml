@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="481.0" prefWidth="790.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.controllers.GoodsMainFormController">
+   <top>
+      <MenuBar prefHeight="10.0" prefWidth="707.0" BorderPane.alignment="CENTER">
+        <menus>
+          <Menu mnemonicParsing="false" text="Файл">
+            <items>
+              <MenuItem fx:id="mnItemClose" mnemonicParsing="false" onAction="#onMenuItemClicked" text="Закрыть" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Редактировать">
+            <items>
+              <MenuItem fx:id="mnItemAdd" mnemonicParsing="false" onAction="#onMenuItemClicked" text="Добавить" />
+                  <MenuItem fx:id="mnItemEdit" mnemonicParsing="false" onAction="#onMenuItemClicked" text="Редактировать" />
+                  <MenuItem fx:id="mnItemDelete" mnemonicParsing="false" onAction="#onMenuItemClicked" text="Удалить" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Справка">
+            <items>
+              <MenuItem fx:id="mnItemHelp" mnemonicParsing="false" onAction="#onMenuItemClicked" text="Инструкция" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+   </top>
+   <center>
+      <TableView fx:id="tblViewGoods" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+        <columns>
+          <TableColumn fx:id="colmnId" prefWidth="34.0" text="#" />
+          <TableColumn fx:id="colmnName" prefWidth="160.0" text="Название" />
+            <TableColumn fx:id="colmBarcode" prefWidth="107.0" text="Штрих-Код" />
+            <TableColumn fx:id="columnPrice" prefWidth="95.0" text="Цена" />
+            <TableColumn fx:id="colmnActiveFrom" prefWidth="105.0" text="Действует от" />
+            <TableColumn fx:id="colmActiveUntil" prefWidth="121.0" text="Действует до" />
+            <TableColumn fx:id="colmnCategory" prefWidth="167.0" text="Категория" />
+        </columns>
+      </TableView>
+   </center>
+</BorderPane>
