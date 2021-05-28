@@ -24,6 +24,10 @@ public class Price {
         this.endDate = endDate;
     }
 
+    public Price(Double price) {
+        this.price = price;
+    }
+
     public Price() {
     }
 

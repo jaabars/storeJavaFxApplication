@@ -10,6 +10,15 @@ public class ProductDto {
     private boolean active;
     private Category category;
     private Price price;
+    private int amount;
+
+    public int getAmount() {
+        return amount;
+    }
+
+    public void setAmount(int amount) {
+        this.amount = amount;
+    }
 
     public boolean isActive() {
         return active;

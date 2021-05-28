@@ -2,8 +2,9 @@ package sample.db.impl;
 
 import sample.db.DbHelper;
 import sample.models.*;
+import sample.models.dto.OperationDto;
+import sample.models.dto.OperationItemDto;
 import sample.models.dto.ProductDto;
-import sun.applet.AppletResourceLoader;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -479,6 +480,202 @@ public class DbHelperImpl implements DbHelper {
             }
         }
         return 0;
+    }
+
+    @Override
+    public ProductDto findProductByBarcode(String barcode) {
+        Connection  connection = null;
+        ProductDto productDto = null;
+
+        try {
+            connection = getConnection();
+            String findProductByBarcode = "SELECT p.id, p.name, pr.price, r.amount FROM products p join prices as pr on pr.product_id=p.id join rests as r on r.product_id=p.id where p.active=1 and p.barcode=? and date(pr.start_date)<=? AND date(pr.end_date)>=?";
+            PreparedStatement preparedStatement = connection.prepareStatement(findProductByBarcode);
+            preparedStatement.setString(1,barcode);
+            preparedStatement.setString(2,LocalDate.now().toString());
+            preparedStatement.setString(3,LocalDate.now().toString());
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()){
+                productDto = new ProductDto();
+                productDto.setId(resultSet.getLong(1));
+                productDto.setName(resultSet.getString(2));
+                productDto.setPrice(new Price(resultSet.getDouble(3)));
+                productDto.setAmount(resultSet.getInt(4));
+            }
+            resultSet.close();
+            preparedStatement.close();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }finally {
+            if (connection!=null){
+                try {
+                    connection.close();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+            }
+        }
+        return productDto;
+    }
+
+    @Override
+    public int saveOperationAndItems(Long userId,double totalSum, List<OperationItemDto> operationItemDtoList) {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            connection.setAutoCommit(false);
+            String insertOperationQuery = "INSERT INTO operations (add_date,sum,user_id) VALUES (?,?,?)";
+            PreparedStatement preparedStatementOperation = connection.prepareStatement(insertOperationQuery);
+            preparedStatementOperation.setString(1,LocalDate.now().toString());
+            preparedStatementOperation.setDouble(2,totalSum);
+            preparedStatementOperation.setLong(3,userId);
+            preparedStatementOperation.executeUpdate();
+            ResultSet resultSet = preparedStatementOperation.getGeneratedKeys();
+            Long operationId = resultSet.getLong(1);
+            String insertOperation = "INSERT INTO operation_details (product_id,operation_id,amount,price) VALUES(?,?,?,?)";
+            PreparedStatement preparedStatementItems = connection.prepareStatement(insertOperation);
+            for (OperationItemDto op :operationItemDtoList){
+                preparedStatementItems.setLong(1,op.getProductId());
+                preparedStatementItems.setLong(2,operationId);
+                preparedStatementItems.setInt(3,op.getAmount());
+                preparedStatementItems.setDouble(4,op.getSum());
+                preparedStatementItems.executeUpdate();
+            }
+            connection.commit();
+            return 1;
+
+        } catch (SQLException throwables) {
+            try {
+                connection.rollback();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            throwables.printStackTrace();
+        }finally {
+            if (connection!=null){
+                try {
+                    connection.close();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public List<OperationDto> getAllOperations() {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            String getOperationsQuery = "SELECT op.id,op.add_date,op.sum,a.login FROM operations as op JOIN accounts as a ON op.user_id=a.user_id";
+            PreparedStatement preparedStatement = connection.prepareStatement(getOperationsQuery);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            List<OperationDto> operationDtoList = new ArrayList<>();
+            while (resultSet.next()){
+                OperationDto operationDto = new OperationDto();
+                operationDto.setId(resultSet.getLong(1));
+                operationDto.setAddDate(LocalDate.parse(resultSet.getString(2)));
+                operationDto.setSum(resultSet.getDouble(3));
+                operationDto.setAccount(new Account(resultSet.getString(4)));
+                operationDtoList.add(operationDto);
+            }
+            return operationDtoList;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }finally {
+            if (connection!=null){
+                try {
+                    connection.close();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+            }
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<OperationDetail> getAllOperationDetails(OperationDto newValue) {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            String selectQuery = "SELECT od.id,od.amount,od.price,pr.name FROM operation_details as od JOIN products as pr on od.product_id=pr.id where od.operation_id=?";
+            PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
+            preparedStatement.setLong(1,newValue.getId());
+            ResultSet resultSet = preparedStatement.executeQuery();
+            List<OperationDetail> operationDetailList = new ArrayList<>();
+            while (resultSet.next()){
+                OperationDetail operationDetail = new OperationDetail();
+                operationDetail.setId(resultSet.getLong(1));
+                operationDetail.setAmount(resultSet.getInt(2));
+                operationDetail.setPrice(resultSet.getDouble(3));
+                operationDetail.setProduct(new Product(resultSet.getString(4)));
+                operationDetailList.add(operationDetail);
+            }
+            return operationDetailList;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }finally {
+            if (connection!=null){
+                try {
+                    connection.close();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+
+            }
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public void decrementAmount(Long productId) {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            String decrementQuery = "UPDATE rests SET amount=(SELECT amount FROM rests WHERE product_id=?)-1 WHERE product_id=?";
+            PreparedStatement preparedStatement = connection.prepareStatement(decrementQuery);
+            preparedStatement.setLong(1,productId);
+            preparedStatement.setLong(2,productId);
+            preparedStatement.executeUpdate();
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }finally {
+            if (connection!=null){
+                try {
+                    connection.close();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void incrementAmount(Long productId,int amount) {
+        Connection connection = null;
+        try {
+            connection=getConnection();
+            String decrementQuery = "UPDATE rests SET amount=(SELECT amount FROM rests WHERE product_id=?)+1 WHERE product_id=?";
+            PreparedStatement preparedStatement = connection.prepareStatement(decrementQuery);
+            preparedStatement.setLong(1,productId);
+            preparedStatement.setLong(2,productId);
+            for (int i=amount;i>0;i--) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }finally {
+            if (connection!=null){
+                try {
+                    connection.close();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+            }
+        }
     }
 
 

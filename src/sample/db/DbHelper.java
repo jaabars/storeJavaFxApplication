@@ -2,6 +2,8 @@ package sample.db;
 
 import sample.db.impl.DbHelperImpl;
 import sample.models.*;
+import sample.models.dto.OperationDto;
+import sample.models.dto.OperationItemDto;
 import sample.models.dto.ProductDto;
 
 import java.util.List;
@@ -38,4 +40,14 @@ public interface DbHelper {
     int saveProductDtoTransactionMethod(ProductDto productDto);
 
     int updateProductAndPrice(ProductDto productDto);
+
+    ProductDto findProductByBarcode(String barcode);
+
+    int saveOperationAndItems(Long userId,double totalSum, List<OperationItemDto> operationItemDtoList);
+
+    List<OperationDto> getAllOperations();
+
+    List<OperationDetail> getAllOperationDetails(OperationDto newValue);
+    void decrementAmount(Long productId);
+    void incrementAmount(Long productId,int amount);
 }

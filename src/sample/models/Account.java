@@ -16,6 +16,10 @@ public class Account {
     public Account() {
     }
 
+    public Account(String login) {
+        this.login = login;
+    }
+
     public User getUser() {
         return user;
     }

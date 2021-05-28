@@ -13,8 +13,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.text.Font?>
 
-
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="535.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="535.0" prefWidth="845.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.controllers.SaleFormController">
    <top>
       <MenuBar BorderPane.alignment="CENTER">
         <menus>
@@ -25,56 +24,47 @@
           </Menu>
           <Menu mnemonicParsing="false" text="Редактирование">
             <items>
-              <MenuItem mnemonicParsing="false" text="Редактировать" />
+              <MenuItem fx:id="mnItemEdit" mnemonicParsing="false" onAction="#onMenuItemClicked" text="Декремент" />
+                  <MenuItem fx:id="mnItemDelete" mnemonicParsing="false" onAction="#onMenuItemClicked" text="Удалить" />
             </items>
           </Menu>
         </menus>
       </MenuBar>
    </top>
    <center>
-      <SplitPane dividerPositions="0.7142857142857143" prefHeight="160.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+      <SplitPane dividerPositions="0.6725978647686833" prefHeight="160.0" prefWidth="200.0" BorderPane.alignment="CENTER">
         <items>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="508.0" prefWidth="587.0">
                <children>
-                  <TableView prefHeight="510.0" prefWidth="568.0">
+                  <TableView fx:id="tblViewOperations" prefHeight="510.0" prefWidth="568.0">
                     <columns>
-                      <TableColumn prefWidth="35.0" text="#" />
-                      <TableColumn prefWidth="184.0" text="Товар" />
-                        <TableColumn prefWidth="105.0" text="Цена" />
-                        <TableColumn prefWidth="105.0" text="Количество" />
-                        <TableColumn prefWidth="137.0" text="Сумма" />
+                      <TableColumn fx:id="colmnNum" prefWidth="35.0" text="#" />
+                      <TableColumn fx:id="collmnGoodName" prefWidth="184.0" text="Товар" />
+                        <TableColumn fx:id="colmnPrice" prefWidth="105.0" text="Цена" />
+                        <TableColumn fx:id="colmnQuantity" prefWidth="105.0" text="Количество" />
+                        <TableColumn fx:id="colmnSum" prefWidth="137.0" text="Сумма" />
                     </columns>
                   </TableView>
                </children>
             </AnchorPane>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="508.0" prefWidth="308.0">
+          <AnchorPane maxWidth="-Infinity" minHeight="0.0" minWidth="-Infinity" prefHeight="508.0" prefWidth="269.0" SplitPane.resizableWithParent="false">
                <children>
-                  <Label layoutX="14.0" layoutY="55.0" prefHeight="17.0" prefWidth="87.0" text="Штрих код">
+                  <Label layoutX="16.0" layoutY="49.0" prefHeight="17.0" prefWidth="87.0" text="Штрих код">
                      <font>
                         <Font name="System Italic" size="15.0" />
                      </font>
                   </Label>
-                  <TextField layoutX="6.0" layoutY="76.0" prefHeight="35.0" prefWidth="216.0">
+                  <TextField fx:id="txtBarcode" layoutX="16.0" layoutY="76.0" prefHeight="35.0" prefWidth="237.0">
                      <font>
                         <Font size="15.0" />
                      </font>
                   </TextField>
-                  <Label layoutX="15.0" layoutY="135.0" prefHeight="21.0" prefWidth="100.0" text="Количество:">
-                     <font>
-                        <Font size="15.0" />
-                     </font>
-                  </Label>
-                  <Label layoutX="114.0" layoutY="135.0" prefHeight="21.0" prefWidth="88.0" text="0">
-                     <font>
-                        <Font name="System Bold" size="15.0" />
-                     </font>
-                  </Label>
-                  <Button defaultButton="true" layoutX="6.0" layoutY="397.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="217.0" text="Сохранить">
+                  <Button fx:id="btnSave" defaultButton="true" layoutX="6.0" layoutY="397.0" mnemonicParsing="false" onAction="#onButtonClicked" prefHeight="24.0" prefWidth="217.0" text="Сохранить">
                      <font>
                         <Font size="15.0" />
                      </font>
                   </Button>
-                  <Button cancelButton="true" layoutX="51.0" layoutY="444.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="127.0" text="Отмена">
+                  <Button fx:id="btnCancel" cancelButton="true" layoutX="51.0" layoutY="444.0" mnemonicParsing="false" onAction="#onButtonClicked" prefHeight="18.0" prefWidth="127.0" text="Отмена">
                      <font>
                         <Font size="15.0" />
                      </font>
@@ -84,7 +74,7 @@
                         <Font name="System Bold" size="24.0" />
                      </font>
                   </Label>
-                  <Label layoutX="21.0" layoutY="281.0" prefHeight="88.0" prefWidth="145.0" text="0">
+                  <Label fx:id="lblSum" layoutX="21.0" layoutY="281.0" prefHeight="88.0" prefWidth="145.0" text="0">
                      <font>
                         <Font name="System Bold" size="32.0" />
                      </font>
